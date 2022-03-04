@@ -3,7 +3,7 @@ import matplotlib.pyplot as plot
 import math
 
 # Коэффициенты
-CoefficientsA = [0.0, -1, 1.5, 0.5, 0.5]
+CoefficientsA = [0.0, -0.1, 1.2, 0.8, 0.6]
 CheckCoefficients = 4
 
 # Вариант 6
@@ -14,7 +14,7 @@ SecondT = 1
 
 # Погрешность
 E = 0.01
-H = 0.2
+H = 0.05
 
 
 # Функция экстремали
@@ -124,46 +124,58 @@ def MethodRitz():
 
     # Направления изменения коэффициентов
     move = -1
-
+    iterations = 0
+    integralDistance = 0
     while True:
-
-        # Шаг изменения коэффициента
-        h = 0.27
-
-        # Вспомогательная переменная для отслеживания интеграла
-        distancePrev = 0
+        i = 1
 
         while True:
 
-            coefficients[i] = coefficients[i] + move * h
-            integralNext = MethodRectangle(coefficients)
-            distanceNext = math.fabs(integralNext - integralPrev)
+            # Шаг изменения коэффициента
+            h = 0.36
 
-            # Условия выхода из 2го цикла
-            if math.fabs(integralNext - integralPrev) < E:
+            # Вспомогательная переменная для отслеживания интеграла
+            distancePrev = 0
+
+            while True:
+
+                coefficients[i] = coefficients[i] + move * h
+                integralNext = MethodRectangle(coefficients)
+                distanceNext = math.fabs(integralNext - integralPrev)
+
+                # Условия выхода из 2го цикла
+                if math.fabs(integralNext - integralPrev) < E:
+                    break
+
+                # Если предыдущий интеграл больше найденного,то остаемся в этом направлении изменения коэффициентов
+                elif integralPrev > integralNext:
+                    move = 1
+                # Иначе меняем направление
+                else:
+                    move = -1
+
+                # Отслеживание интеграла
+                if distancePrev == 0:
+                    distanceNext = distancePrev
+                if distanceNext > distancePrev:
+                    move = move * -1
+
+                # Изменения необходимые для того чтобы не зациклилось
+                h = h * 0.9
+                integralPrev = integralNext
+
+            # Увеличиваем указатель на 1
+            i = i + 1
+            # Условия выхода из 1го цикла
+            if i == CheckCoefficients + 1:
                 break
+        iterations = iterations+1
 
-            # Если предыдущий интеграл больше найденного,то остаемся в этом направлении изменения коэффициентов
-            elif integralPrev > integralNext:
-                move = 1
-            # Иначе меняем направление
-            else:
-                move = -1
-
-            # Отслеживание интеграла
-            if distancePrev == 0:
-                distanceNext = distancePrev
-            if distanceNext > distancePrev:
-                move = move * -1
-
-            # Изменения необходимые для того чтобы не зациклилось
-            h = h * 0.92
-            integralPrev = integralNext
-
-        # Увеличиваем указатель на 1
-        i = i + 1
-        # Условия выхода из 1го цикла
-        if i == CheckCoefficients + 1:
+        if integralDistance == 0:
+            integralDistance = MethodRectangle(coefficients)
+        if integralDistance > MethodRectangle(coefficients):
+            integralDistance = MethodRectangle(coefficients)
+        if iterations == 10 or (integralDistance - MethodRectangle(coefficients))<E:
             break
     return [coefficients]
 
